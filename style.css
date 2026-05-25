@@ -1,0 +1,66 @@
+:root {
+  --bg: #f5f6f9;
+  --card: #fff;
+  --text: #1c2230;
+  --muted: #6b7488;
+  --border: #e5e8ef;
+  --accent: #5b6b8c;
+  --danger: #c0392b;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  min-height: 100vh;
+}
+.topbar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 16px;
+  background: #2a3140; color: #fff;
+}
+.brand { font-weight: 800; letter-spacing: .04em; font-size: 13px; }
+.topbar .root { color: rgba(255,255,255,.5); font-size: 12px; font-weight: 600; text-decoration: none; letter-spacing: .03em; }
+.topbar .root:hover { color: #fff; }
+
+.wrap { max-width: 640px; margin: 0 auto; padding: 24px 16px 60px; }
+h1 { font-size: 1.3rem; font-weight: 600; margin: 8px 0 4px; }
+.muted { color: var(--muted); }
+.sub { color: var(--muted); margin: 0 0 16px; font-size: .92rem; }
+
+.signin-note {
+  background: #fff8e6; border: 1px solid #f0e0a8; color: #715c1c;
+  padding: 12px 14px; border-radius: 10px; font-size: .9rem; margin-bottom: 16px;
+}
+
+button {
+  font: inherit; font-size: .85rem; font-weight: 600;
+  border: 1px solid var(--border); background: #fff; color: var(--text);
+  border-radius: 8px; padding: 6px 12px; cursor: pointer;
+}
+button:hover { border-color: var(--accent); color: var(--accent); }
+button.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+.msg {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+}
+.msg-head { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--muted); margin-bottom: 2px; }
+.msg-head .from { font-weight: 700; color: var(--text); }
+.msg-head .badge {
+  font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  background: #eef1f7; color: var(--accent); border-radius: 6px; padding: 1px 6px;
+}
+.msg-head .time { margin-left: auto; }
+.subject { font-weight: 600; }
+.snippet { color: var(--muted); font-size: .9rem; }
+.body { white-space: pre-wrap; word-break: break-word; margin-top: 4px; }
+.msg-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+  background: #2a3140; color: #fff; padding: 9px 16px; border-radius: 999px;
+  font-size: .85rem; opacity: 0; transition: .18s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
