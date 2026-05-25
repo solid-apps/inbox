@@ -42,11 +42,10 @@ function typeOf(n) {
   return idOf(Array.isArray(t) ? t[0] : t).replace(/^.*[#/]/, '') || ''
 }
 
-// --- inbox discovery (WebID ldp:inbox → fallback pod-relative) ---
-async function discoverInbox() {
-  const fallback = new URL('../../../inbox/', location.href).href
-  const webid = myWebId()
-  if (!webid) return fallback
+// --- inbox discovery (WebID ldp:inbox) ---
+// Resolve any WebID's ldp:inbox — used to find your own inbox to read, and a
+// recipient's inbox to send to.
+async function inboxOf(webid) {
   try {
     const r = await authFetch(webid, { headers: { Accept: 'application/ld+json' } })
     if (r.ok) {
@@ -57,8 +56,36 @@ async function discoverInbox() {
         if (inbox) return new URL(idOf(inbox), webid).href
       }
     }
-  } catch { /* fall back */ }
-  return fallback
+  } catch { /* unreachable / cross-origin */ }
+  return null
+}
+async function discoverInbox() {
+  const webid = myWebId()
+  return (webid && await inboxOf(webid)) || new URL('../../../inbox/', location.href).href
+}
+
+// Send an ActivityStreams Create{Note} to a recipient's inbox. acl:Append is
+// public, so this works to any pod's inbox (CORS permitting). To yourself = a
+// note that lands back in your own list.
+async function sendMessage({ to, subject, body }) {
+  const inbox = await inboxOf(to)
+  if (!inbox) throw new Error('no inbox found for that WebID')
+  const me = myWebId()
+  const now = new Date().toISOString()
+  const msg = {
+    '@context': 'https://www.w3.org/ns/activitystreams',
+    type: 'Create',
+    actor: me,
+    to,
+    published: now,
+    object: { type: 'Note', summary: subject, content: body, attributedTo: me, published: now }
+  }
+  const res = await authFetch(inbox, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/ld+json' },
+    body: JSON.stringify(msg)
+  })
+  if (!res.ok) throw new Error(`send failed (${res.status})`)
 }
 
 // --- listing + parsing ---
@@ -119,6 +146,36 @@ function toast(msg) {
   if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t) }
   t.textContent = msg; t.classList.add('show')
   setTimeout(() => t.classList.remove('show'), 2400)
+}
+
+// Compose form. "To" prefills with your own WebID, so the first send is a
+// note-to-self that appears in the list below — the simplest way to prove
+// the round-trip.
+function composer() {
+  const me = myWebId() || ''
+  const wrap = document.createElement('div')
+  wrap.className = 'composer'
+  wrap.innerHTML = `
+    <input class="c-to" placeholder="To (WebID)" value="${esc(me)}">
+    <input class="c-subj" placeholder="Subject">
+    <textarea class="c-body" placeholder="Message" rows="4"></textarea>
+    <div class="form-actions">
+      <button class="c-send">Send</button>
+      <button class="c-cancel ghost">Cancel</button>
+    </div>
+    <p class="hint muted">Delivered to the recipient's inbox (their WebID's <code>ldp:inbox</code>).</p>`
+  wrap.querySelector('.c-cancel').onclick = () => render()
+  wrap.querySelector('.c-send').onclick = async (e) => {
+    const to = wrap.querySelector('.c-to').value.trim()
+    const subject = wrap.querySelector('.c-subj').value.trim()
+    const body = wrap.querySelector('.c-body').value.trim()
+    if (!to) { toast('Add a recipient WebID'); return }
+    if (!subject && !body) { toast('Add a subject or message'); return }
+    e.currentTarget.disabled = true
+    try { await sendMessage({ to, subject, body }); toast('sent'); await render() }
+    catch (err) { toast(String(err.message || err)); e.currentTarget.disabled = false }
+  }
+  return wrap
 }
 
 const shortFrom = (m) => m.fromName || (m.from ? m.from.replace(/#.*$/, '').replace(/\/$/, '').split('/').slice(-2).join('/') : 'unknown')
@@ -185,6 +242,17 @@ async function render() {
       : `<div class="signin-note">Couldn't read your inbox: ${esc(String(err.message || err))}</div>`)
     return
   }
+
+  const bar = document.createElement('div')
+  bar.className = 'toolbar'
+  bar.innerHTML = '<button class="compose">Compose</button>'
+  appEl.appendChild(bar)
+  bar.querySelector('.compose').onclick = () => {
+    const next = bar.nextElementSibling
+    if (next && next.classList.contains('composer')) next.remove()
+    else bar.after(composer())
+  }
+
   if (!MESSAGES.length) {
     appEl.insertAdjacentHTML('beforeend', '<p class="muted">Your inbox is empty.</p>')
     return

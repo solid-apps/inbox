@@ -41,6 +41,24 @@ button {
 }
 button:hover { border-color: var(--accent); color: var(--accent); }
 button.danger:hover { border-color: var(--danger); color: var(--danger); }
+button:disabled { opacity: .5; cursor: default; }
+.compose, .c-send { background: var(--accent); color: #fff; border-color: var(--accent); }
+.compose:hover, .c-send:hover { filter: brightness(1.07); color: #fff; border-color: var(--accent); }
+
+input, textarea {
+  font: inherit; color: var(--text); width: 100%;
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 11px; background: #fff;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+
+.toolbar { margin-bottom: 14px; }
+.composer {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px;
+}
+.form-actions { display: flex; gap: 8px; }
+.hint { font-size: .8rem; margin: 2px 0 0; }
+.hint code { background: #eef1f7; padding: 0 4px; border-radius: 4px; }
 
 .msg {
   background: var(--card); border: 1px solid var(--border);

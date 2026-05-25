@@ -1,10 +1,12 @@
 # inbox
 
-A minimal **inbox app** for a Solid pod — read the notifications delivered to
-your pod. **v1 is read-only.**
+A minimal **inbox app** for a Solid pod — read *and send* notifications.
 
 - **List / read / delete** the messages in your pod's inbox.
-- Discovers the inbox via your WebID's `ldp:inbox` (falls back to `<pod>/inbox/`).
+- **Compose / send** — write an ActivityStreams `Note` and POST it to the
+  recipient's inbox (discovered from *their* WebID's `ldp:inbox`). "To" prefills
+  with your own WebID, so a send-to-self lands back in your list.
+- Discovers your own inbox via your WebID's `ldp:inbox` (falls back to `<pod>/inbox/`).
 - The inbox is **owner-only**, so you must be signed in (login pill, bottom-right).
 
 ## How it works
@@ -31,10 +33,11 @@ already understands fediverse-shaped notifications:
 
 ## Roadmap
 
-- **v1 (this)** — read / delete.
-- **v2** — compose & send: discover the recipient's `ldp:inbox` (from their
-  WebID) and POST a message. Your contacts become the address book.
-- **v3** — federation via JSS's ActivityPub support.
+- **v1** — read / delete. ✅
+- **v2 (this)** — compose & send: discover the recipient's `ldp:inbox` (from
+  their WebID) and POST a message. ✅
+- **next** — pick recipients from your contacts (once contacts carry a WebID);
+  federation via JSS's ActivityPub support.
 
 ## License
 
